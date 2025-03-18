@@ -1,4 +1,3 @@
-
 import { AggregatedSensorData, EntityType, GreenCreditScoreData } from '@/types/iot';
 import { RecommendationItem, FineAssessment } from './sustainabilityRecommendations';
 
@@ -281,8 +280,8 @@ function generateAIFine(
     };
   }
   
-  // Base fine amount depends on entity type
-  const baseAmount = entityType === 'company' ? 10000 : 25000;
+  // Base fine amount is now between $1 and $50
+  const baseAmount = Math.max(1, Math.min(50, Math.round((50 - categoryScore) / 2)));
   
   // Calculate fine amount based on category score (lower score = higher fine)
   // and the severity of the violation
@@ -317,8 +316,8 @@ function generateAIFine(
       break;
   }
   
-  // Calculate final fine amount
-  const amount = Math.round(baseAmount * scoreFactor * violationSeverity);
+  // Calculate final fine amount (between $1 and $50)
+  const amount = Math.max(1, Math.min(50, Math.round(baseAmount * scoreFactor * violationSeverity)));
   
   // Generate fine details
   const regulationCodes: Record<typeof category, string> = {

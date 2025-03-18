@@ -1,4 +1,3 @@
-
 import { AggregatedSensorData, EntityType, GreenCreditScoreData } from '@/types/iot';
 import { generateRecommendations } from './aiService';
 
@@ -193,12 +192,12 @@ function generateFineForCategory(
   score: number,
   sensorData: AggregatedSensorData
 ): FineAssessment {
-  // Only companies and cities can be fined (not civilians)
-  const baseAmount = entityType === 'company' ? 5000 : entityType === 'city' ? 20000 : 100;
+  // Base amount is now between $1 and $50
+  const baseAmount = Math.max(1, Math.min(50, Math.round((40 - score) / 2)));
   
   // Calculate fine amount based on score (lower score = higher fine)
   const multiplier = (40 - score) / 10; // For scores below 40
-  const amount = Math.round(baseAmount * Math.max(1, multiplier));
+  const amount = Math.max(1, Math.min(50, Math.round(baseAmount * Math.max(1, multiplier))));
   
   // Set due dates
   const dueDate = new Date();

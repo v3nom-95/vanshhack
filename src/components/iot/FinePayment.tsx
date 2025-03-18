@@ -17,6 +17,9 @@ const FinePayment: React.FC<FinePaymentProps> = ({ fine, onPaymentComplete }) =>
   const [isSuccess, setIsSuccess] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
+  // Ensure fine amount doesn't exceed $50
+  const cappedAmount = Math.min(fine.amount, 50);
+
   const handlePayment = async () => {
     if (!provider || !signer) {
       setError('Please connect your wallet first');
@@ -41,8 +44,8 @@ const FinePayment: React.FC<FinePaymentProps> = ({ fine, onPaymentComplete }) =>
         throw new Error('Please approve the connection request in MetaMask');
       }
 
-      // Convert fine amount to Wei (assuming fine amount is in ETH)
-      const amountInWei = ethers.utils.parseEther(fine.amount.toString());
+      // Convert fine amount to Wei (using capped amount)
+      const amountInWei = ethers.utils.parseEther(cappedAmount.toString());
 
       // Create transaction object
       const tx = {
@@ -50,7 +53,7 @@ const FinePayment: React.FC<FinePaymentProps> = ({ fine, onPaymentComplete }) =>
         value: amountInWei,
         data: ethers.utils.defaultAbiCoder.encode(
           ['string', 'string', 'uint256'],
-          [fine.reason, fine.category, fine.amount]
+          [fine.reason, fine.category, cappedAmount]
         ),
       };
 
@@ -114,7 +117,12 @@ const FinePayment: React.FC<FinePaymentProps> = ({ fine, onPaymentComplete }) =>
         <div>
           <h3 className="font-semibold">Fine Details</h3>
           <p className="text-sm text-gray-600">{fine.reason}</p>
-          <p className="text-sm text-gray-600">Amount: {fine.amount} ETH</p>
+          <p className="text-sm text-gray-600">Amount: ${cappedAmount} ETH</p>
+          {fine.amount > 50 && (
+            <p className="text-sm text-yellow-600 mt-1">
+              Note: Fine amount has been capped at $50 as per regulations
+            </p>
+          )}
           <p className="text-sm text-gray-600">Category: {fine.category}</p>
           {transactionHash && (
             <p className="text-sm text-blue-600 mt-2">

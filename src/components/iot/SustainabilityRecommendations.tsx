@@ -104,35 +104,44 @@ const SustainabilityRecommendations: React.FC<SustainabilityRecommendationsProps
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-4">Compliance Fines</h4>
             <div className="space-y-4">
-              {fines.map((fine, index) => (
-                <div key={index} className="p-4 border rounded-lg bg-red-50 dark:bg-red-900/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-medium text-red-600 dark:text-red-400">
-                      Fine: ${fine.amount.toLocaleString()}
-                    </h5>
-                    <span className="text-sm text-muted-foreground">
-                      Due: {new Date(fine.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="text-sm mb-2">{fine.reason}</p>
-                  {fine.regulationCode && (
-                    <p className="text-sm text-muted-foreground">
-                      Regulation Code: {fine.regulationCode}
+              {fines.map((fine, index) => {
+                // Cap the fine amount at $50
+                const cappedAmount = Math.min(fine.amount, 50);
+                return (
+                  <div key={index} className="p-4 border rounded-lg bg-red-50 dark:bg-red-900/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-red-600 dark:text-red-400">
+                        Fine: ${cappedAmount.toLocaleString()}
+                      </h5>
+                      <span className="text-sm text-muted-foreground">
+                        Due: {new Date(fine.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm mb-2">{fine.reason}</p>
+                    {fine.regulationCode && (
+                      <p className="text-sm text-muted-foreground">
+                        Regulation Code: {fine.regulationCode}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Appeal Deadline: {new Date(fine.appealDeadline).toLocaleDateString()}
                     </p>
-                  )}
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Appeal Deadline: {new Date(fine.appealDeadline).toLocaleDateString()}
-                  </p>
-                  <div className="mt-4">
-                    <button
-                      onClick={() => setSelectedFine(fine)}
-                      className="text-sm text-red-600 dark:text-red-400 hover:underline"
-                    >
-                      Pay Fine
-                    </button>
+                    {fine.amount > 50 && (
+                      <p className="text-sm text-yellow-600 mt-2">
+                        Note: Fine amount has been capped at $50 as per regulations
+                      </p>
+                    )}
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setSelectedFine({...fine, amount: cappedAmount})}
+                        className="text-sm text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Pay Fine
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
