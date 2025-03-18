@@ -2,6 +2,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import Index from "./pages/Index";
 import Test from "./pages/Test";
 import IoTDashboard from "./pages/IoTDashboard";
+import SmartRoads from "./pages/SmartRoads";
 import { Web3Provider } from "./contexts/Web3Context";
 import WalletConnect from "./components/wallet/WalletConnect";
 
@@ -28,6 +29,11 @@ function App() {
                     </Link>
                   </li>
                   <li>
+                    <Link to="/smart-roads" className="text-foreground hover:text-ecosync-green-dark transition-colors">
+                      Smart Roads
+                    </Link>
+                  </li>
+                  <li>
                     <Link to="/test" className="text-foreground hover:text-ecosync-green-dark transition-colors">
                       Test
                     </Link>
@@ -42,6 +48,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/iot-dashboard" element={<IoTDashboard />} />
+            <Route path="/smart-roads" element={<SmartRoads />} />
             <Route path="/test" element={<Test />} />
           </Routes>
         </main>
