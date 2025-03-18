@@ -770,40 +770,282 @@ const Home: React.FC = () => {
 
             {/* Regional Impact Analysis */}
             <Card className="p-6 dark:bg-gray-800/50 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300 dark:before:absolute dark:before:inset-0 dark:before:bg-gradient-to-r dark:before:from-blue-500/10 dark:before:to-purple-500/10 dark:before:animate-shimmer dark:before:-z-10">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <Map className="h-6 w-6 text-blue-500" />
-                Regional Impact Analysis
-              </h2>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={metrics.regionalData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="region" />
-                    <PolarRadiusAxis />
-                    <Radar
-                      name="Renewable Energy"
-                      dataKey="renewableEnergy"
-                      stroke="#4CAF50"
-                      fill="#4CAF50"
-                      fillOpacity={0.6}
-                    />
-                    <Radar
-                      name="Carbon Emissions"
-                      dataKey="carbonEmissions"
-                      stroke="#F44336"
-                      fill="#F44336"
-                      fillOpacity={0.6}
-                    />
-                    <Radar
-                      name="Forest Cover"
-                      dataKey="forestCover"
-                      stroke="#2E7D32"
-                      fill="#2E7D32"
-                      fillOpacity={0.6}
-                    />
-                    <Legend />
-                  </RadarChart>
-                </ResponsiveContainer>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Map className="h-6 w-6 text-blue-500" />
+                  Regional Impact Analysis
+                </h2>
+                <div className="flex items-center gap-4">
+                  <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">Global Overview</SelectItem>
+                      <SelectItem value="north_america">North America</SelectItem>
+                      <SelectItem value="europe">Europe</SelectItem>
+                      <SelectItem value="asia">Asia</SelectItem>
+                      <SelectItem value="south_america">South America</SelectItem>
+                      <SelectItem value="africa">Africa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Data
+                  </Button>
+                </div>
+              </div>
+
+              {/* Regional Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[
+                  { 
+                    region: 'North America',
+                    impact: 'High',
+                    color: '#4CAF50',
+                    metrics: {
+                      carbon: '45%',
+                      renewable: '35%',
+                      forest: '40%',
+                      water: '75%'
+                    }
+                  },
+                  { 
+                    region: 'Europe',
+                    impact: 'Medium',
+                    color: '#2196F3',
+                    metrics: {
+                      carbon: '30%',
+                      renewable: '45%',
+                      forest: '35%',
+                      water: '85%'
+                    }
+                  },
+                  { 
+                    region: 'Asia',
+                    impact: 'Critical',
+                    color: '#F44336',
+                    metrics: {
+                      carbon: '65%',
+                      renewable: '25%',
+                      forest: '25%',
+                      water: '60%'
+                    }
+                  },
+                  { 
+                    region: 'South America',
+                    impact: 'High',
+                    color: '#FF9800',
+                    metrics: {
+                      carbon: '55%',
+                      renewable: '40%',
+                      forest: '50%',
+                      water: '80%'
+                    }
+                  }
+                ].map((region, index) => (
+                  <motion.div
+                    key={region.region}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold">{region.region}</h3>
+                          <Badge 
+                            variant="outline" 
+                            className="mt-1"
+                            style={{ 
+                              color: region.color,
+                              borderColor: region.color
+                            }}
+                          >
+                            {region.impact} Impact
+                          </Badge>
+                        </div>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: region.color }} />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Carbon Emissions</span>
+                          <span className="font-medium">{region.metrics.carbon}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Renewable Energy</span>
+                          <span className="font-medium">{region.metrics.renewable}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Forest Cover</span>
+                          <span className="font-medium">{region.metrics.forest}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Water Quality</span>
+                          <span className="font-medium">{region.metrics.water}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Regional Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Regional Performance Comparison</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={[
+                        { 
+                          region: 'North America',
+                          carbon: 45,
+                          renewable: 35,
+                          forest: 40,
+                          water: 75,
+                          waste: 65,
+                          transport: 55
+                        },
+                        { 
+                          region: 'Europe',
+                          carbon: 30,
+                          renewable: 45,
+                          forest: 35,
+                          water: 85,
+                          waste: 75,
+                          transport: 70
+                        },
+                        { 
+                          region: 'Asia',
+                          carbon: 65,
+                          renewable: 25,
+                          forest: 25,
+                          water: 60,
+                          waste: 45,
+                          transport: 50
+                        },
+                        { 
+                          region: 'South America',
+                          carbon: 55,
+                          renewable: 40,
+                          forest: 50,
+                          water: 80,
+                          waste: 60,
+                          transport: 45
+                        }
+                      ]}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="region" />
+                        <PolarRadiusAxis />
+                        <Radar name="North America" dataKey="carbon" stroke="#4CAF50" fill="#4CAF50" fillOpacity={0.6} />
+                        <Radar name="Europe" dataKey="renewable" stroke="#2196F3" fill="#2196F3" fillOpacity={0.6} />
+                        <Radar name="Asia" dataKey="forest" stroke="#F44336" fill="#F44336" fillOpacity={0.6} />
+                        <Radar name="South America" dataKey="water" stroke="#FF9800" fill="#FF9800" fillOpacity={0.6} />
+                        <Legend />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Regional Trends</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={[
+                        { year: 2020, na: 45, eu: 30, asia: 65, sa: 55 },
+                        { year: 2021, na: 42, eu: 28, asia: 68, sa: 58 },
+                        { year: 2022, na: 40, eu: 25, asia: 70, sa: 60 },
+                        { year: 2023, na: 38, eu: 22, asia: 72, sa: 62 },
+                        { year: 2024, na: 35, eu: 20, asia: 75, sa: 65 }
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="na" name="North America" stroke="#4CAF50" strokeWidth={2} />
+                        <Line type="monotone" dataKey="eu" name="Europe" stroke="#2196F3" strokeWidth={2} />
+                        <Line type="monotone" dataKey="asia" name="Asia" stroke="#F44336" strokeWidth={2} />
+                        <Line type="monotone" dataKey="sa" name="South America" stroke="#FF9800" strokeWidth={2} />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Regional Impact Details */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-4">Impact Assessment</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      region: 'North America',
+                      impacts: [
+                        { category: 'Environmental', severity: 'High', description: 'Significant carbon emissions from industrial activities' },
+                        { category: 'Social', severity: 'Medium', description: 'Growing awareness and adoption of sustainable practices' },
+                        { category: 'Economic', severity: 'High', description: 'Strong investment in renewable energy infrastructure' }
+                      ]
+                    },
+                    {
+                      region: 'Europe',
+                      impacts: [
+                        { category: 'Environmental', severity: 'Medium', description: 'Progressive reduction in carbon footprint' },
+                        { category: 'Social', severity: 'High', description: 'Strong public support for climate action' },
+                        { category: 'Economic', severity: 'Medium', description: 'Balanced growth with sustainability focus' }
+                      ]
+                    },
+                    {
+                      region: 'Asia',
+                      impacts: [
+                        { category: 'Environmental', severity: 'Critical', description: 'Rapid industrialization leading to high emissions' },
+                        { category: 'Social', severity: 'High', description: 'Growing population pressure on resources' },
+                        { category: 'Economic', severity: 'High', description: 'Fast-paced development with environmental challenges' }
+                      ]
+                    },
+                    {
+                      region: 'South America',
+                      impacts: [
+                        { category: 'Environmental', severity: 'High', description: 'Deforestation and biodiversity loss concerns' },
+                        { category: 'Social', severity: 'Medium', description: 'Mixed progress in sustainable development' },
+                        { category: 'Economic', severity: 'Medium', description: 'Balancing growth with conservation efforts' }
+                      ]
+                    }
+                  ].map((region, index) => (
+                    <motion.div
+                      key={region.region}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="p-4">
+                        <h4 className="font-semibold mb-3">{region.region}</h4>
+                        <div className="space-y-3">
+                          {region.impacts.map((impact, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <div 
+                                className="w-2 h-2 rounded-full mt-2"
+                                style={{ 
+                                  backgroundColor: impact.severity === 'Critical' ? '#F44336' :
+                                               impact.severity === 'High' ? '#FF9800' :
+                                               impact.severity === 'Medium' ? '#FFC107' : '#4CAF50'
+                                }}
+                              />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{impact.category}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {impact.severity}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-gray-500 mt-1">{impact.description}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </Card>
 
