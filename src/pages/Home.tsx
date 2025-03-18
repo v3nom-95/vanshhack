@@ -254,6 +254,34 @@ const Home: React.FC = () => {
     dateRange: { from: null, to: null }
   });
 
+  // Add new state variables after the existing useState declarations
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    updateInterval: 5000,
+    showPredictions: true,
+    showAlerts: true,
+    showNews: true,
+    chartAnimations: true,
+    darkMode: theme === 'dark',
+    notifications: {
+      email: true,
+      push: true,
+      sms: false
+    },
+    dataDisplay: {
+      showTrends: true,
+      showTargets: true,
+      showConfidence: true
+    },
+    regions: {
+      north_america: true,
+      europe: true,
+      asia: true,
+      south_america: true,
+      africa: true
+    }
+  });
+
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 100], [1, 0.8]);
   const scale = useTransform(scrollY, [0, 100], [1, 0.95]);
@@ -493,6 +521,171 @@ const Home: React.FC = () => {
     </motion.div>
   );
 
+  // Add this before the return statement
+  const handleSettingsChange = (key: string, value: any) => {
+    setSettings(prev => {
+      const newSettings = { ...prev };
+      if (key.includes('.')) {
+        const [parent, child] = key.split('.');
+        newSettings[parent] = { ...newSettings[parent], [child]: value };
+      } else {
+        newSettings[key] = value;
+      }
+      return newSettings;
+    });
+  };
+
+  // Add this after the UpdateIndicator component
+  const SettingsDialog = () => (
+    <Dialog open={showSettings} onOpenChange={setShowSettings}>
+      <DialogContent className="max-w-2xl dark:bg-gray-800/95 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:before:absolute dark:before:inset-0 dark:before:bg-gradient-to-r dark:before:from-blue-500/10 dark:before:to-purple-500/10 dark:before:animate-shimmer dark:before:-z-10">
+        <DialogHeader>
+          <DialogTitle>Dashboard Settings</DialogTitle>
+          <DialogDescription>
+            Customize your dashboard experience and preferences
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Update Interval */}
+          <div className="space-y-2">
+            <h4 className="font-medium">Update Interval</h4>
+            <div className="flex items-center gap-4">
+              <Slider
+                value={[settings.updateInterval / 1000]}
+                onValueChange={([value]) => handleSettingsChange('updateInterval', value * 1000)}
+                min={1}
+                max={60}
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-500">{settings.updateInterval / 1000}s</span>
+            </div>
+          </div>
+
+          {/* Display Options */}
+          <div className="space-y-2">
+            <h4 className="font-medium">Display Options</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.showPredictions}
+                  onCheckedChange={(checked) => handleSettingsChange('showPredictions', checked)}
+                />
+                <label className="text-sm">Show Predictions</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.showAlerts}
+                  onCheckedChange={(checked) => handleSettingsChange('showAlerts', checked)}
+                />
+                <label className="text-sm">Show Alerts</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.showNews}
+                  onCheckedChange={(checked) => handleSettingsChange('showNews', checked)}
+                />
+                <label className="text-sm">Show News</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.chartAnimations}
+                  onCheckedChange={(checked) => handleSettingsChange('chartAnimations', checked)}
+                />
+                <label className="text-sm">Chart Animations</label>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Display */}
+          <div className="space-y-2">
+            <h4 className="font-medium">Data Display</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.dataDisplay.showTrends}
+                  onCheckedChange={(checked) => handleSettingsChange('dataDisplay.showTrends', checked)}
+                />
+                <label className="text-sm">Show Trends</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.dataDisplay.showTargets}
+                  onCheckedChange={(checked) => handleSettingsChange('dataDisplay.showTargets', checked)}
+                />
+                <label className="text-sm">Show Targets</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.dataDisplay.showConfidence}
+                  onCheckedChange={(checked) => handleSettingsChange('dataDisplay.showConfidence', checked)}
+                />
+                <label className="text-sm">Show Confidence</label>
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="space-y-2">
+            <h4 className="font-medium">Notifications</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.notifications.email}
+                  onCheckedChange={(checked) => handleSettingsChange('notifications.email', checked)}
+                />
+                <label className="text-sm">Email</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.notifications.push}
+                  onCheckedChange={(checked) => handleSettingsChange('notifications.push', checked)}
+                />
+                <label className="text-sm">Push</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.notifications.sms}
+                  onCheckedChange={(checked) => handleSettingsChange('notifications.sms', checked)}
+                />
+                <label className="text-sm">SMS</label>
+              </div>
+            </div>
+          </div>
+
+          {/* Regions */}
+          <div className="space-y-2">
+            <h4 className="font-medium">Regions</h4>
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(settings.regions).map(([region, enabled]) => (
+                <div key={region} className="flex items-center space-x-2">
+                  <Switch
+                    checked={enabled}
+                    onCheckedChange={(checked) => handleSettingsChange(`regions.${region}`, checked)}
+                  />
+                  <label className="text-sm capitalize">{region.replace('_', ' ')}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" onClick={() => setShowSettings(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => {
+            setUpdateInterval(settings.updateInterval);
+            setShowSettings(false);
+          }}>
+            Save Changes
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="fixed inset-0 -z-10 dark:bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)] animate-pulse-slow" />
@@ -545,7 +738,7 @@ const Home: React.FC = () => {
                   )}
                 </motion.div>
               </Button>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={() => setShowSettings(true)}>
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
@@ -1790,6 +1983,9 @@ const Home: React.FC = () => {
 
       {/* Add UpdateIndicator */}
       <UpdateIndicator />
+
+      {/* Add the SettingsDialog component before the closing div of the return statement */}
+      <SettingsDialog />
     </div>
   );
 };
