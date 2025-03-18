@@ -54,7 +54,8 @@ import {
   Play,
   Pause,
   SkipBack,
-  SkipForward
+  SkipForward,
+  Recycle
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -827,7 +828,7 @@ const Home: React.FC = () => {
                     description: 'Extreme heat wave affecting multiple countries',
                     timestamp: new Date().toISOString(),
                     affectedArea: 1500000,
-                    trend: 'increasing' as const
+                    trend: 'increasing' as TrendType
                   },
                   {
                     id: '2',
@@ -837,7 +838,7 @@ const Home: React.FC = () => {
                     description: 'Air quality index reaching hazardous levels',
                     timestamp: new Date().toISOString(),
                     affectedArea: 800000,
-                    trend: 'stable' as const
+                    trend: 'stable' as TrendType
                   },
                   {
                     id: '3',
@@ -847,7 +848,7 @@ const Home: React.FC = () => {
                     description: 'Increased deforestation rate detected',
                     timestamp: new Date().toISOString(),
                     affectedArea: 500000,
-                    trend: 'increasing' as const
+                    trend: 'increasing' as TrendType
                   }
                 ].map((alert, index) => (
                   <motion.div
@@ -1045,24 +1046,439 @@ const Home: React.FC = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Analytics Dashboard</h2>
-              {/* Add analytics content here */}
+          <TabsContent value="analytics" className="space-y-8">
+            {/* Analytics Overview */}
+            <Card className="p-6 dark:bg-gray-800/50 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <BarChart3 className="h-6 w-6 text-blue-500" />
+                  Analytics Dashboard
+                </h2>
+                <div className="flex items-center gap-4">
+                  <Select value={timeRange} onValueChange={setTimeRange}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Time Range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">Last 24 Hours</SelectItem>
+                      <SelectItem value="7d">Last 7 Days</SelectItem>
+                      <SelectItem value="30d">Last 30 Days</SelectItem>
+                      <SelectItem value="1y">Last Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Data
+                  </Button>
+                </div>
+              </div>
+
+              {/* Key Performance Indicators */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: 'Total Carbon Reduction', value: '2.4M', unit: 'tons', trend: '+12%', icon: <Leaf className="h-5 w-5 text-green-500" /> },
+                  { label: 'Energy Efficiency', value: '87%', unit: 'target', trend: '+5%', icon: <Zap className="h-5 w-5 text-yellow-500" /> },
+                  { label: 'Waste Management', value: '92%', unit: 'recycled', trend: '+8%', icon: <Recycle className="h-5 w-5 text-blue-500" /> },
+                  { label: 'Water Conservation', value: '45%', unit: 'saved', trend: '+15%', icon: <Droplet className="h-5 w-5 text-blue-500" /> }
+                ].map((kpi, index) => (
+                  <motion.div
+                    key={kpi.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {kpi.icon}
+                          <div>
+                            <div className="text-sm text-gray-500">{kpi.label}</div>
+                            <div className="text-xl font-bold">
+                              {kpi.value}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-green-500">{kpi.trend}</div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Trend Analysis */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Carbon Emissions Trend</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={metrics.historicalData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="timestamp" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="carbonEmissions" stroke="#F44336" strokeWidth={2} />
+                        <Area type="monotone" dataKey="carbonEmissions" fill="#F44336" fillOpacity={0.1} />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Regional Distribution</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'North America', value: 25 },
+                            { name: 'Europe', value: 20 },
+                            { name: 'Asia', value: 35 },
+                            { name: 'Others', value: 20 }
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {COLORS.map((color, index) => (
+                            <Cell key={`cell-${index}`} fill={color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
+            </Card>
+
+            {/* Detailed Analytics */}
+            <Card className="p-6 dark:bg-gray-800/50 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4">Detailed Analysis</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Resource Utilization</h4>
+                  <div className="space-y-4">
+                    {[
+                      { label: 'Energy', value: 75 },
+                      { label: 'Water', value: 60 },
+                      { label: 'Materials', value: 85 },
+                      { label: 'Waste', value: 40 }
+                    ].map((item, index) => (
+                      <div key={item.label}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{item.label}</span>
+                          <span className="text-sm font-medium">{item.value}%</span>
+                        </div>
+                        <Progress value={item.value} className="h-2" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Efficiency Metrics</h4>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={[
+                        { metric: 'Energy', value: 85 },
+                        { metric: 'Water', value: 75 },
+                        { metric: 'Waste', value: 90 },
+                        { metric: 'Materials', value: 80 },
+                        { metric: 'Transport', value: 70 },
+                        { metric: 'Process', value: 85 }
+                      ]}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="metric" />
+                        <PolarRadiusAxis />
+                        <Radar name="Efficiency" dataKey="value" stroke="#4CAF50" fill="#4CAF50" fillOpacity={0.6} />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
-          <TabsContent value="alerts">
-            <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Climate Alerts</h2>
-              {/* Add alerts content here */}
+          <TabsContent value="alerts" className="space-y-8">
+            {/* Alerts Overview */}
+            <Card className="p-6 dark:bg-gray-800/50 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <AlertOctagon className="h-6 w-6 text-red-500" />
+                  Climate Alerts
+                </h2>
+                <div className="flex items-center gap-4">
+                  <Select>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by Severity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Alerts</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notification Settings
+                  </Button>
+                </div>
+              </div>
+
+              {/* Alert Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: 'Critical Alerts', value: '3', color: '#F44336' },
+                  { label: 'High Priority', value: '7', color: '#FF9800' },
+                  { label: 'Medium Priority', value: '12', color: '#FFC107' },
+                  { label: 'Low Priority', value: '5', color: '#4CAF50' }
+                ].map((stat, index) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-gray-500">{stat.label}</div>
+                          <div className="text-2xl font-bold" style={{ color: stat.color }}>
+                            {stat.value}
+                          </div>
+                        </div>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stat.color }} />
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Alert Timeline */}
+              <div className="space-y-4">
+                {[
+                  {
+                    id: '1',
+                    type: 'extreme_weather' as const,
+                    severity: 'critical' as const,
+                    location: 'Southeast Asia',
+                    description: 'Extreme heat wave affecting multiple countries',
+                    timestamp: new Date().toISOString(),
+                    affectedArea: 1500000,
+                    trend: 'increasing' as TrendType
+                  },
+                  {
+                    id: '2',
+                    type: 'pollution' as const,
+                    severity: 'high' as const,
+                    location: 'North India',
+                    description: 'Air quality index reaching hazardous levels',
+                    timestamp: new Date().toISOString(),
+                    affectedArea: 800000,
+                    trend: 'stable' as TrendType
+                  },
+                  {
+                    id: '3',
+                    type: 'deforestation' as const,
+                    severity: 'medium' as const,
+                    location: 'Amazon Basin',
+                    description: 'Increased deforestation rate detected',
+                    timestamp: new Date().toISOString(),
+                    affectedArea: 500000,
+                    trend: 'increasing' as TrendType
+                  }
+                ].map((alert, index) => (
+                  <motion.div
+                    key={alert.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4 hover:shadow-md transition-all cursor-pointer">
+                      <div className="flex items-start gap-4">
+                        <div className="w-2 h-2 rounded-full mt-2" style={{ 
+                          backgroundColor: alert.severity === 'critical' ? '#F44336' :
+                                       alert.severity === 'high' ? '#FF9800' :
+                                       alert.severity === 'medium' ? '#FFC107' : '#4CAF50'
+                        }} />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold capitalize">{alert.type.replace('_', ' ')}</span>
+                              <Badge variant="outline" className="capitalize">{alert.severity}</Badge>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {new Date(alert.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <h3 className="mt-2 font-medium">{alert.location}</h3>
+                          <p className="text-sm text-gray-500 mt-1">{alert.description}</p>
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Map className="h-4 w-4" />
+                              <span>{alert.affectedArea.toLocaleString()} km²</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className={getTrendColor(alert.trend)}>
+                                {getTrendIcon(alert.trend)}
+                              </span>
+                              <span className="capitalize">{alert.trend}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
             </Card>
           </TabsContent>
 
-          <TabsContent value="predictions">
-            <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Climate Predictions</h2>
-              {/* Add predictions content here */}
+          <TabsContent value="predictions" className="space-y-8">
+            {/* Predictions Overview */}
+            <Card className="p-6 dark:bg-gray-800/50 dark:backdrop-blur-sm dark:border dark:border-gray-700 dark:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Target className="h-6 w-6 text-purple-500" />
+                  Climate Predictions
+                </h2>
+                <div className="flex items-center gap-4">
+                  <Select>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Time Horizon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1y">1 Year</SelectItem>
+                      <SelectItem value="5y">5 Years</SelectItem>
+                      <SelectItem value="10y">10 Years</SelectItem>
+                      <SelectItem value="20y">20 Years</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Report
+                  </Button>
+                </div>
+              </div>
+
+              {/* Prediction Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {[
+                  {
+                    title: 'Temperature Rise',
+                    current: '1.2°C',
+                    prediction: '1.5°C',
+                    trend: 'increasing' as TrendType,
+                    confidence: 85
+                  },
+                  {
+                    title: 'Sea Level Rise',
+                    current: '3.3mm',
+                    prediction: '4.2mm',
+                    trend: 'increasing' as TrendType,
+                    confidence: 90
+                  },
+                  {
+                    title: 'Carbon Emissions',
+                    current: '415ppm',
+                    prediction: '450ppm',
+                    trend: 'increasing' as TrendType,
+                    confidence: 75
+                  }
+                ].map((metric, index) => (
+                  <motion.div
+                    key={metric.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4">
+                      <h3 className="text-lg font-semibold mb-4">{metric.title}</h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Current</span>
+                          <span className="font-medium">{metric.current}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Prediction</span>
+                          <span className="font-medium">{metric.prediction}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">Trend</span>
+                          <div className="flex items-center gap-2">
+                            <span className={getTrendColor(metric.trend)}>
+                              {getTrendIcon(metric.trend)}
+                            </span>
+                            <span className="capitalize">{metric.trend}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm text-gray-500">Confidence</span>
+                            <span className="text-sm font-medium">{metric.confidence}%</span>
+                          </div>
+                          <Progress value={metric.confidence} className="h-2" />
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Prediction Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Temperature Projections</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={[
+                        { year: 2020, value: 1.2 },
+                        { year: 2025, value: 1.3 },
+                        { year: 2030, value: 1.4 },
+                        { year: 2035, value: 1.5 },
+                        { year: 2040, value: 1.6 }
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="value" stroke="#9C27B0" strokeWidth={2} />
+                        <Area type="monotone" dataKey="value" fill="#9C27B0" fillOpacity={0.1} />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Emission Scenarios</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={[
+                        { year: 2020, optimistic: 415, realistic: 420, pessimistic: 425 },
+                        { year: 2025, optimistic: 420, realistic: 430, pessimistic: 440 },
+                        { year: 2030, optimistic: 425, realistic: 440, pessimistic: 455 },
+                        { year: 2035, optimistic: 430, realistic: 450, pessimistic: 470 },
+                        { year: 2040, optimistic: 435, realistic: 460, pessimistic: 485 }
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="optimistic" stroke="#4CAF50" strokeWidth={2} />
+                        <Line type="monotone" dataKey="realistic" stroke="#FF9800" strokeWidth={2} />
+                        <Line type="monotone" dataKey="pessimistic" stroke="#F44336" strokeWidth={2} />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
             </Card>
           </TabsContent>
         </Tabs>
