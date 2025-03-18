@@ -1,8 +1,8 @@
-import { StrictMode } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 console.log('Starting application initialization...');
 
@@ -23,11 +23,11 @@ console.log('Root created successfully');
 try {
   console.log('Attempting to render App component...');
   root.render(
-    <StrictMode>
-      <BrowserRouter>
+    <React.StrictMode>
+      <ThemeProvider>
         <App />
-      </BrowserRouter>
-    </StrictMode>
+      </ThemeProvider>
+    </React.StrictMode>
   );
   console.log('App component rendered successfully');
 } catch (error) {
