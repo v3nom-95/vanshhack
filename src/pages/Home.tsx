@@ -259,15 +259,26 @@ const Home: React.FC = () => {
   const springConfig = { damping: 15, stiffness: 100 };
   const springScale = useSpring(scale, springConfig);
 
+  // Add new state for real-time updates
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [updateInterval, setUpdateInterval] = useState(5000); // 5 seconds
+
+  // Generate random data within a range
+  const generateRandomData = (min: number, max: number, current: number) => {
+    const change = (Math.random() - 0.5) * (max - min) * 0.1;
+    return Math.max(min, Math.min(max, current + change));
+  };
+
+  // Update metrics in real-time
   useEffect(() => {
     const updateMetrics = () => {
       setMetrics(prev => {
         const newMetrics = {
-          renewableEnergy: Math.max(0, Math.min(100, prev.renewableEnergy + (Math.random() - 0.5) * 2)),
-          carbonEmissions: Math.max(0, Math.min(100, prev.carbonEmissions + (Math.random() - 0.5) * 2)),
-          forestCover: Math.max(0, Math.min(100, prev.forestCover + (Math.random() - 0.5) * 1)),
-          oceanHealth: Math.max(0, Math.min(100, prev.oceanHealth + (Math.random() - 0.5) * 1.5)),
-          airQuality: Math.max(0, Math.min(100, prev.airQuality + (Math.random() - 0.5) * 2)),
+          renewableEnergy: generateRandomData(30, 40, prev.renewableEnergy),
+          carbonEmissions: generateRandomData(60, 70, prev.carbonEmissions),
+          forestCover: generateRandomData(40, 50, prev.forestCover),
+          oceanHealth: generateRandomData(70, 80, prev.oceanHealth),
+          airQuality: generateRandomData(55, 65, prev.airQuality),
           historicalData: [...prev.historicalData, {
             timestamp: new Date().toISOString(),
             renewableEnergy: prev.renewableEnergy,
@@ -275,15 +286,62 @@ const Home: React.FC = () => {
             forestCover: prev.forestCover,
             oceanHealth: prev.oceanHealth,
             airQuality: prev.airQuality
-          }].slice(-10),
-          regionalData: prev.regionalData,
-          predictions: prev.predictions
+          }].slice(-20),
+          regionalData: prev.regionalData.map(region => ({
+            ...region,
+            renewableEnergy: generateRandomData(20, 50, region.renewableEnergy),
+            carbonEmissions: generateRandomData(30, 80, region.carbonEmissions),
+            forestCover: generateRandomData(20, 60, region.forestCover),
+            oceanHealth: generateRandomData(60, 90, region.oceanHealth),
+            airQuality: generateRandomData(40, 80, region.airQuality)
+          })),
+          predictions: prev.predictions.map(pred => ({
+            ...pred,
+            renewableEnergy: generateRandomData(40, 50, pred.renewableEnergy),
+            carbonEmissions: generateRandomData(40, 60, pred.carbonEmissions),
+            forestCover: generateRandomData(50, 70, pred.forestCover)
+          }))
         };
         return newMetrics;
       });
+      setLastUpdate(new Date());
     };
 
-    const interval = setInterval(updateMetrics, 5000);
+    const interval = setInterval(updateMetrics, updateInterval);
+    return () => clearInterval(interval);
+  }, [updateInterval]);
+
+  // Update news in real-time
+  useEffect(() => {
+    const updateNews = () => {
+      setNews(prev => {
+        const newNews = [...prev];
+        // Randomly update or add new news
+        if (Math.random() < 0.3) { // 30% chance to add new news
+          const categories: SustainabilityNews['category'][] = ['renewable', 'climate', 'conservation', 'technology', 'policy', 'research'];
+          const impacts: SustainabilityNews['impact'][] = ['high', 'medium', 'low'];
+          const sentiments: SustainabilityNews['sentiment'][] = ['positive', 'neutral', 'negative'];
+          const regions = ['global', 'north_america', 'europe', 'asia', 'south_america', 'africa'];
+          
+          const newItem: SustainabilityNews = {
+            id: Date.now().toString(),
+            title: `New ${categories[Math.floor(Math.random() * categories.length)]} Development`,
+            source: ['Climate News', 'Tech Sustainability', 'Environmental Science'][Math.floor(Math.random() * 3)],
+            timestamp: new Date().toISOString(),
+            category: categories[Math.floor(Math.random() * categories.length)],
+            impact: impacts[Math.floor(Math.random() * impacts.length)],
+            description: `Latest updates on ${categories[Math.floor(Math.random() * categories.length)]} initiatives.`,
+            region: regions[Math.floor(Math.random() * regions.length)],
+            tags: ['climate', 'sustainability', 'innovation'],
+            sentiment: sentiments[Math.floor(Math.random() * sentiments.length)]
+          };
+          newNews.unshift(newItem);
+        }
+        return newNews.slice(0, 6); // Keep only the latest 6 news items
+      });
+    };
+
+    const interval = setInterval(updateNews, 10000); // Update news every 10 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -419,6 +477,18 @@ const Home: React.FC = () => {
           </div>
         </div>
       </Card>
+    </motion.div>
+  );
+
+  // Add real-time update indicator
+  const UpdateIndicator = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 dark:bg-gray-700 dark:shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+    >
+      <RefreshCw className="h-4 w-4 animate-spin" />
+      <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>
     </motion.div>
   );
 
@@ -1059,6 +1129,9 @@ const Home: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add UpdateIndicator */}
+      <UpdateIndicator />
     </div>
   );
 };
