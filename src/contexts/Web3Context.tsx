@@ -32,19 +32,64 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const connect = async () => {
     try {
       if (!window.ethereum) {
-        throw new Error("Please install MetaMask or another Web3 wallet");
+        throw new Error("Please install MetaMask to connect your wallet");
+      }
+
+      // Check if MetaMask is installed
+      if (!window.ethereum.isMetaMask) {
+        throw new Error("Please install MetaMask to connect your wallet");
+      }
+
+      // Force MetaMask to show the login popup by disconnecting first
+      try {
+        await window.ethereum.request({
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (err) {
+        // Ignore any errors from the disconnect attempt
       }
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+      
+      // Request account access with force flag
       await provider.send("eth_requestAccounts", []);
+      
+      // Get the signer and account
       const signer = provider.getSigner();
       const account = await signer.getAddress();
+
+      // Set up event listeners for account changes
+      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+        if (accounts.length === 0) {
+          // User disconnected their wallet
+          disconnect();
+        } else {
+          setAccount(accounts[0]);
+        }
+      });
+
+      // Set up event listener for chain changes
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      });
 
       setProvider(provider);
       setSigner(signer);
       setAccount(account);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to connect wallet");
+      if (err instanceof Error) {
+        if (err.message.includes('User rejected')) {
+          setError("Please approve the connection request in MetaMask");
+        } else if (err.message.includes('already pending')) {
+          setError("Please check MetaMask for pending connection request");
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Failed to connect wallet");
+      }
     }
   };
 
