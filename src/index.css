@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom EcoSync Colors */
+@layer base {
+  :root {
+    --ecosync-green-dark: 142.1 76.2% 36.3%;
+    --ecosync-green-medium: 142.1 70.6% 45.3%;
+    --ecosync-green-light: 142.1 65% 55.3%;
+    --ecosync-blue-dark: 217.2 91.2% 59.8%;
+    --ecosync-blue-medium: 217.2 85.6% 65.8%;
+    --ecosync-blue-light: 217.2 80% 71.8%;
+    --ecosync-dark: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --ecosync-green-dark: 142.1 70.6% 45.3%;
+    --ecosync-green-medium: 142.1 65% 55.3%;
+    --ecosync-green-light: 142.1 60% 65.3%;
+    --ecosync-blue-dark: 217.2 85.6% 65.8%;
+    --ecosync-blue-medium: 217.2 80% 71.8%;
+    --ecosync-blue-light: 217.2 75% 77.8%;
+    --ecosync-dark: 222.2 84% 4.9%;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
+}
+
+/* Custom Selection */
+::selection {
+  @apply bg-ecosync-green-light/20 text-ecosync-green-dark;
+}
+
+/* Custom Focus Styles */
+:focus-visible {
+  @apply outline-none ring-2 ring-ecosync-green-dark ring-offset-2 ring-offset-background;
+}
+
+/* Custom Shadows */
+.shadow-ecosync {
+  @apply shadow-lg shadow-ecosync-green-dark/10;
+}
+
+/* Custom Backdrop Blur */
+.backdrop-blur-sm {
+  @apply backdrop-blur-[4px];
+}
+
+/* Custom Glass Effect */
+.glass {
+  @apply bg-background/80 backdrop-blur-sm border border-border/50;
+}
+
+/* Custom Gradient Text */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-ecosync-green-dark via-ecosync-blue-dark to-ecosync-green-dark;
+}
