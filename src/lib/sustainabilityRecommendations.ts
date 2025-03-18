@@ -192,12 +192,12 @@ function generateFineForCategory(
   score: number,
   sensorData: AggregatedSensorData
 ): FineAssessment {
-  // Base amount is now between $1 and $50
-  const baseAmount = Math.max(1, Math.min(50, Math.round((40 - score) / 2)));
+  // Base amount is now capped at $50 for all entity types
+  const baseAmount = 50;
   
   // Calculate fine amount based on score (lower score = higher fine)
   const multiplier = (40 - score) / 10; // For scores below 40
-  const amount = Math.max(1, Math.min(50, Math.round(baseAmount * Math.max(1, multiplier))));
+  const amount = Math.min(50, Math.round(baseAmount * Math.max(1, multiplier)));
   
   // Set due dates
   const dueDate = new Date();

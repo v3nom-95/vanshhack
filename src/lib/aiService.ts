@@ -280,8 +280,8 @@ function generateAIFine(
     };
   }
   
-  // Base fine amount is now between $1 and $50
-  const baseAmount = Math.max(1, Math.min(50, Math.round((50 - categoryScore) / 2)));
+  // Base fine amount is now capped at $50 for all entity types
+  const baseAmount = 50;
   
   // Calculate fine amount based on category score (lower score = higher fine)
   // and the severity of the violation
@@ -316,8 +316,8 @@ function generateAIFine(
       break;
   }
   
-  // Calculate final fine amount (between $1 and $50)
-  const amount = Math.max(1, Math.min(50, Math.round(baseAmount * scoreFactor * violationSeverity)));
+  // Calculate final fine amount (capped at $50)
+  const amount = Math.min(50, Math.round(baseAmount * scoreFactor * violationSeverity));
   
   // Generate fine details
   const regulationCodes: Record<typeof category, string> = {

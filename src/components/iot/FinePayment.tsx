@@ -3,7 +3,7 @@ import { useWeb3 } from '@/contexts/Web3Context';
 import { Button } from '@/components/ui/button';
 import { FineAssessment } from '@/types/iot';
 import { ethers } from 'ethers';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 interface FinePaymentProps {
   fine: FineAssessment;
@@ -11,153 +11,113 @@ interface FinePaymentProps {
 }
 
 const FinePayment: React.FC<FinePaymentProps> = ({ fine, onPaymentComplete }) => {
-  const { provider, signer, isConnected } = useWeb3();
+  const { account, provider, signer } = useWeb3();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
-  // Ensure fine amount doesn't exceed $50
+  // Ensure fine amount is capped at $50
   const cappedAmount = Math.min(fine.amount, 50);
 
   const handlePayment = async () => {
-    if (!provider || !signer) {
-      setError('Please connect your wallet first');
+    if (!provider || !signer || !account) {
+      setError('Please connect your wallet to make a payment');
       return;
     }
 
-    setIsProcessing(true);
-    setError(null);
-    setIsSuccess(false);
-    setTransactionHash(null);
-
     try {
-      // Check if MetaMask is installed
-      if (!window.ethereum) {
-        throw new Error('Please install MetaMask to make payments');
-      }
+      setIsProcessing(true);
+      setError(null);
 
-      // Request account access if not already connected
-      try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-      } catch (err) {
-        throw new Error('Please approve the connection request in MetaMask');
-      }
-
-      // Convert fine amount to Wei (using capped amount)
+      // Convert USD amount to Wei (1 USD = 1e18 Wei)
       const amountInWei = ethers.utils.parseEther(cappedAmount.toString());
 
-      // Create transaction object
-      const tx = {
-        to: import.meta.env.VITE_FINE_PAYMENT_CONTRACT_ADDRESS,
+      // Create transaction data
+      const txData = {
+        to: import.meta.env.VITE_TREASURY_ADDRESS,
         value: amountInWei,
-        data: ethers.utils.defaultAbiCoder.encode(
-          ['string', 'string', 'uint256'],
-          [fine.reason, fine.category, cappedAmount]
-        ),
+        from: account
       };
 
-      // Get gas estimate
-      const gasEstimate = await provider.estimateGas(tx);
-      const gasPrice = await provider.getGasPrice();
-      
-      // Add 20% buffer to gas estimate
-      const gasLimit = gasEstimate.mul(120).div(100);
+      // Send transaction
+      const tx = await signer.sendTransaction(txData);
+      setTransactionHash(tx.hash);
 
-      // Send transaction with gas parameters
-      const transaction = await signer.sendTransaction({
-        ...tx,
-        gasLimit,
-        gasPrice: gasPrice.mul(120).div(100), // Add 20% to gas price for faster processing
-      });
-      
-      // Store transaction hash
-      setTransactionHash(transaction.hash);
-      
       // Wait for transaction to be mined
-      const receipt = await transaction.wait();
-      
-      if (receipt.status === 1) {
-        // Show success state
-        setIsSuccess(true);
-        
-        // Wait for 2 seconds to show success message
-        setTimeout(() => {
-          // Call onPaymentComplete callback to remove the fine
-          onPaymentComplete();
-        }, 2000);
-      } else {
-        throw new Error('Transaction failed');
-      }
+      await tx.wait();
+      onPaymentComplete();
     } catch (err) {
       console.error('Payment error:', err);
-      if (err instanceof Error) {
-        if (err.message.includes('User rejected')) {
-          setError('Payment was rejected in MetaMask');
-        } else if (err.message.includes('insufficient funds')) {
-          setError('Insufficient funds in your wallet');
-        } else if (err.message.includes('network')) {
-          setError('Please check your network connection and try again');
-        } else if (err.message.includes('nonce')) {
-          setError('Transaction nonce error. Please try again');
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError('Failed to process payment');
-      }
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 border rounded-lg">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="font-semibold">Fine Details</h3>
-          <p className="text-sm text-gray-600">{fine.reason}</p>
-          <p className="text-sm text-gray-600">Amount: ${cappedAmount} ETH</p>
-          {fine.amount > 50 && (
-            <p className="text-sm text-yellow-600 mt-1">
-              Note: Fine amount has been capped at $50 as per regulations
-            </p>
-          )}
-          <p className="text-sm text-gray-600">Category: {fine.category}</p>
-          {transactionHash && (
-            <p className="text-sm text-blue-600 mt-2">
-              Transaction Hash: {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
-            </p>
-          )}
-        </div>
-        {isSuccess ? (
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>Payment Successful!</span>
-          </div>
-        ) : (
-          <Button
-            onClick={handlePayment}
-            disabled={isProcessing || !isConnected}
-            className="flex items-center gap-2"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              'Pay Fine'
-            )}
-          </Button>
-        )}
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Pay Fine</h2>
+        <button
+          onClick={onPaymentComplete}
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 p-2 rounded">
-          <AlertCircle className="w-4 h-4" />
-          {error}
+
+      <div className="space-y-4">
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <h3 className="font-medium mb-2">Fine Details</h3>
+          <div className="space-y-2 text-sm">
+            <p>
+              <span className="text-gray-500 dark:text-gray-400">Category:</span>{' '}
+              {fine.category.charAt(0).toUpperCase() + fine.category.slice(1)}
+            </p>
+            <p>
+              <span className="text-gray-500 dark:text-gray-400">Amount:</span>{' '}
+              <span className="font-medium">${cappedAmount.toFixed(2)}</span>
+              {fine.amount > 50 && (
+                <span className="ml-1 text-xs text-yellow-600 dark:text-yellow-400">
+                  (Capped from ${fine.amount.toFixed(2)})
+                </span>
+              )}
+            </p>
+            <p>
+              <span className="text-gray-500 dark:text-gray-400">Due Date:</span>{' '}
+              {new Date(fine.dueDate).toLocaleDateString()}
+            </p>
+            <p>
+              <span className="text-gray-500 dark:text-gray-400">Reason:</span>{' '}
+              {fine.reason}
+            </p>
+          </div>
         </div>
-      )}
+
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {transactionHash && (
+          <div className="bg-green-50 dark:bg-green-900/10 text-green-600 dark:text-green-400 p-3 rounded-lg text-sm">
+            Transaction successful! Hash: {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
+          </div>
+        )}
+
+        <button
+          onClick={handlePayment}
+          disabled={isProcessing || !account}
+          className={`w-full py-2 px-4 rounded-lg text-white font-medium ${
+            isProcessing || !account
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isProcessing ? 'Processing...' : !account ? 'Connect Wallet' : 'Pay Fine'}
+        </button>
+      </div>
     </div>
   );
 };

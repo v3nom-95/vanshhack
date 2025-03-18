@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { RecommendationItem, FineAssessment, EntityType } from '@/types/iot';
 import FinePayment from './FinePayment';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface SustainabilityRecommendationsProps {
   recommendations: RecommendationItem[];
@@ -61,6 +63,14 @@ const SustainabilityRecommendations: React.FC<SustainabilityRecommendationsProps
     setSelectedFine(null);
   };
 
+  const handleAppeal = (fine: FineAssessment) => {
+    // Implementation of handleAppeal function
+  };
+
+  const handlePayFine = (fine: FineAssessment) => {
+    setSelectedFine(fine);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -99,52 +109,71 @@ const SustainabilityRecommendations: React.FC<SustainabilityRecommendationsProps
           </div>
         )}
 
-        {/* Fines */}
-        {fines.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-4">Compliance Fines</h4>
-            <div className="space-y-4">
-              {fines.map((fine, index) => {
-                // Cap the fine amount at $50
-                const cappedAmount = Math.min(fine.amount, 50);
-                return (
-                  <div key={index} className="p-4 border rounded-lg bg-red-50 dark:bg-red-900/10">
-                    <div className="flex items-center justify-between mb-2">
-                      <h5 className="font-medium text-red-600 dark:text-red-400">
-                        Fine: ${cappedAmount.toLocaleString()}
-                      </h5>
-                      <span className="text-sm text-muted-foreground">
-                        Due: {new Date(fine.dueDate).toLocaleDateString()}
-                      </span>
+        {/* Compliance Fines */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Compliance Fines</h3>
+            <Badge variant="destructive" className="animate-pulse">
+              {fines.length} Active Fines
+            </Badge>
+          </div>
+          
+          <div className="grid gap-4">
+            {fines.map((fine) => {
+              // Ensure fine amount is capped at $50
+              const cappedAmount = Math.min(fine.amount, 50);
+              
+              return (
+                <Card key={fine.category} className="relative overflow-hidden">
+                  <CardHeader className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">
+                        {fine.category.charAt(0).toUpperCase() + fine.category.slice(1)} Violation
+                      </CardTitle>
+                      <Badge variant="destructive" className="animate-pulse">
+                        ${cappedAmount.toFixed(2)}
+                        {fine.amount > 50 && (
+                          <span className="ml-1 text-xs opacity-75">
+                            (Capped from ${fine.amount.toFixed(2)})
+                          </span>
+                        )}
+                      </Badge>
                     </div>
-                    <p className="text-sm mb-2">{fine.reason}</p>
+                    <CardDescription className="text-sm">
+                      Due by {new Date(fine.dueDate).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{fine.reason}</p>
                     {fine.regulationCode && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         Regulation Code: {fine.regulationCode}
                       </p>
                     )}
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Appeal Deadline: {new Date(fine.appealDeadline).toLocaleDateString()}
-                    </p>
-                    {fine.amount > 50 && (
-                      <p className="text-sm text-yellow-600 mt-2">
-                        Note: Fine amount has been capped at $50 as per regulations
-                      </p>
-                    )}
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setSelectedFine({...fine, amount: cappedAmount})}
-                        className="text-sm text-red-600 dark:text-red-400 hover:underline"
-                      >
-                        Pay Fine
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAppeal(fine)}
+                      className="text-xs"
+                    >
+                      Appeal Fine
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handlePayFine(fine)}
+                      className="text-xs"
+                    >
+                      Pay Fine
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
-        )}
+        </div>
 
         {/* Payment Modal */}
         {selectedFine && (
